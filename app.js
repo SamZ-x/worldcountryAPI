@@ -1,5 +1,5 @@
 
-//****  MODULES & INSTANCES ****//
+//************  MODULES & INSTANCES ************//
 
 //import express modules and create server
 const express = require('express')
@@ -12,15 +12,25 @@ const countryRoutes = require('./routes/countryRoutes')
 const dbConnect = require('./db/connection')
 require('dotenv').config()
 
-//****  Middleware USE ****//
+//import middleware modules
+const notfound = require('./middlewares/url-not-found')
+const errorhandler = require('./middlewares/error-handle')
+
+
+
+//************  Middlewares USE ************//
 app.use(express.json())
 
-//****  MODULES USE ****//
-app.use('/api/v1/worldcountrys', countryRoutes)
 
+
+
+//************  MODULES USE ************//
+app.use('/api/v1/worldcountry', countryRoutes)
+app.use(notfound)
+app.use(errorhandler)
 
 //prepare port and run server
-const port = 3000
+const port = process.env.port || 3000    
 
 //combine database connect and server start up
 const start = async()=>{

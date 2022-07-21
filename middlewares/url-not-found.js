@@ -1,0 +1,6 @@
+//call back function that handle not found url error
+const notFound = (req, res) =>{
+    res.status(404).send("Page not found!")
+}
+
+module.exports = notFound
