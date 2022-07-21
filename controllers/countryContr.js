@@ -1,10 +1,14 @@
 //call back functions for routes
 
+//import database module
+const Country = require('../models/country')
+
 //get all country
 //no req params/query/body
-const getAllCountries = (req, res)=>{
+const getAllCountries = async (req, res)=>{
     try {
-        res.status(202).json({success:true, message: "all countries", data:null})
+        const countries = await Country.find({})
+        res.status(202).json({success:true, message: `all countries ${countries.length} record(s)`, data:countries})
     } catch (error) {
         res.status(500).json({status:false, message: `something error - ${error.message}` })
     }
@@ -12,10 +16,11 @@ const getAllCountries = (req, res)=>{
 
 //create a country
 //need req body (contain info data)
-const createCountry = (req, res)=>{
+const createCountry = async (req, res)=>{
     try {
-        const country = req.body
-        res.status(202).json({success:true, message: 'create country', data: country })
+        const countryData = req.body
+        await Country.create(countryData)
+        res.status(202).json({success:true, message: 'create country', data:countryData })
     } catch (error) {
         res.status(500).json({status:false, message: `something error - ${error.message}` })
     }
@@ -23,10 +28,16 @@ const createCountry = (req, res)=>{
 
 //get single country by id
 //need req params
-const getCountryById = (req, res)=>{
+const getCountryById = async (req, res)=>{
     try {
-        const {id} = req.params
-        res.status(202).json({success:true, message: `get single country id: ${id}`, data:null})
+        const {id:CountryId} = req.params
+        const country = await Country.findOne({_id:CountryId})
+
+        //result check
+        if(!country)
+            return res.status(404).json({success:false, message: `No found country id: ${CountryId}`})
+
+        res.status(202).json({success:true, message: `get single country id: ${CountryId}`, data:country})
     } catch (error) {
         res.status(500).json({status:false, message: `something error - ${error.message}` })
     }
@@ -35,10 +46,16 @@ const getCountryById = (req, res)=>{
 
 //get countries by region
 //need req params
-const getCountriesByRegion = (req, res)=>{
+const getCountriesByRegion = async (req, res)=>{
     try {
         const {title:regionTitle} = req.params
-        res.status(202).json({success:true, message: `get countries of region: ${regionTitle}`, data:null})
+        const countries = await Country.find({region:regionTitle})
+
+        //result check
+        if(!countries)
+            return res.status(404).json({success:false, message: `No found any country in region ${regionTitle}`})
+
+        res.status(202).json({success:true, message: `get ${countries.length} countries of region: ${regionTitle}`, data:countries})
     } catch (error) {
         res.status(500).json({status:false, message: `something error -  ${error.message}` })
     }
@@ -47,10 +64,15 @@ const getCountriesByRegion = (req, res)=>{
 
 //get countries by countinent 
 //need req params
-const getCountriesByCountinent = (req, res)=>{
+const getCountriesByCountinent = async (req, res)=>{
     try {
         const  {title:countinentTitle}  = req.params
-        res.status(202).json({success:true, message: `get countries of countinent: ${countinentTitle}`, data:null})
+        const countries = await Country.find({countinent:countinentTitle})
+        //result check
+        if(!countries)
+            return res.status(404).json({success:false, message: `No found any country in countinent ${countinentTitle}`})
+            
+        res.status(202).json({success:true, message: `get ${countries.length} countries of countinent: ${countinentTitle}`, data:countries})
     } catch (error) {
         res.status(500).json({status:false, message: `something error - ${error.message}` })
     }
