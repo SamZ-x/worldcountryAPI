@@ -19,9 +19,8 @@ const errorhandler = require('./middlewares/error-handle')
 
 
 //************  Middlewares USE ************//
+app.use(express.static('./public'))
 app.use(express.json())
-
-
 
 
 //************  MODULES USE ************//

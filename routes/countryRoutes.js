@@ -18,11 +18,18 @@ const router = express.Router()
 // router.patch('/:id',fn)         //update country info
 // router.delete('/:id',fn)        //delete country record
 
+//filter
+// 'api/v1/worldcountry?region=africa'   match all region
+// ''
+
+
+
 //routes list
-router.route('/').get(countryController.getAllCountries).post(countryController.createCountry)
+//router.route('/static').get(countryController.getAllCountriesStatic)
+router.route('/').get(countryController.getCountries).post(countryController.createCountry)
 router.route('/:id').get(countryController.getCountryById).patch(countryController.updateCountry).delete(countryController.deleteCountry)
-router.route('/region/:title').get(countryController.getCountriesByRegion)
-router.route('/countinent/:title').get(countryController.getCountriesByCountinent)
+// router.route('/region/:title').get(countryController.getCountriesByRegion)
+// router.route('/countinent/:title').get(countryController.getCountriesByCountinent)
 
 //export router
 //serve for app server

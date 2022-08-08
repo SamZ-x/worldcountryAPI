@@ -5,12 +5,67 @@ const Country = require('../models/country')
 const asyncWrapper = require('../middlewares/async')
 const {newCustomAPIError} = require('../error/customAPIError')  //import the instantiation function
 
-//get all country
-//no req params/query/body
-const getAllCountries = asyncWrapper( async (req, res)=>{
-    const countries = await Country.find({})
-    res.status(202).json({success:true, message: `all countries ${countries.length} record(s)`, data:countries})
+
+//dynamic get countries
+//base on filter values
+//sort the result
+//paging and display
+const getCountries = asyncWrapper( async (req, res)=>{
+    //get parameters
+    const filter = {}                //store the clean filter data
+    const {name, alphaCode, m49Code, region, countinent, sort, fields} = req.query
+
+    //{ <field>: { $regex: /pattern/, $options: '<options>' } }    'i':Case insensitivity
+    if(name){
+        filter.countryName = {$regex: name, $options: 'i'}     
+    }
+    if(alphaCode){
+        filter.alphaCode =  {$regex: alphaCode, $options: 'i'}
+    }
+    if(m49Code){
+        filter.m49Code =  Number(m49Code)
+    }
+    if(region){
+        filter.region = {$regex: region, $options: 'i'}        
+    }
+    if(countinent){
+        filter.countinent = {$regex: countinent, $options: 'i'}        
+    }
+    console.log(filter)
+
+    //get the result base on the filters
+    let result = Country.find(filter)
+
+    //default sort the result by name,otherwise base on specific request
+    //'-' to decending 
+    if(sort){
+        const sortList = sort.split(',').join(' ')   //re-build the pattern 
+        result =result.sort(sortList)
+    }
+    else{//default sort by countryName ascending
+        result = result.sort('countryName')
+    }
+
+    //display all fields unless specify
+    //'-' to exclude 
+    if(fields){
+        const fieldsList = fields.split(',').join(' ')
+        result = result.select(fieldsList)
+    }
+
+    //set page limit and paging(use skip and limit to implement)
+    //skip: skip the records before target
+    //limit: not Display the records after the target
+    const limit = Number(req.query.limit) || 20 //specific limit or default 10 record per page
+    const page = Number(req.query.page) || 1    //specific page or default 1st page
+    const skipNum = (page-1)*limit
+    result = result.skip(skipNum).limit(limit)
+
+    //get back the result
+    const countries = await result
+    res.status(202).json({success:true, message: `Retrieved countries ${countries.length} record(s)`, data:countries})
 })
+
 
 //create a country
 //need req body (contain info data)
@@ -33,31 +88,6 @@ const getCountryById = asyncWrapper( async (req, res, next)=>{
     res.status(202).json({success:true, message: `get single country id: ${targetId}`, data:country})
 })
 
-
-//get countries by region
-//need req params
-const getCountriesByRegion =asyncWrapper( async (req, res, next)=>{
-    const {title:regionTitle} = req.params
-    const countries = await Country.find({region:regionTitle})     //return empty array if not found
-    //result check use return array length
-    if(!countries.length){
-        return next(newCustomAPIError(404,`No found any country in region ${regionTitle}`))
-    }
-    res.status(202).json({success:true, message: `get ${countries.length} countries of region: ${regionTitle}`, data:countries})
-})
-
-
-//get countries by countinent 
-//need req params
-const getCountriesByCountinent =asyncWrapper( async (req, res, next)=>{
-    const  {title:countinentTitle}  = req.params
-    const countries = await Country.find({countinent:countinentTitle})
-    //result check
-    if(!countries.length){
-        return next(newCustomAPIError(404,`No found any country in countinent ${countinentTitle}`))
-    }
-    res.status(202).json({success:true, message: `get ${countries.length} countries of countinent: ${countinentTitle}`, data:countries})
-})
 
 //update country info
 //need req body
@@ -89,11 +119,9 @@ const deleteCountry =asyncWrapper( async (req, res, next)=>{
 //export modules
 //serve for routes
 module.exports = {
-    getAllCountries,
+    getCountries,
     createCountry,
     getCountryById,
-    getCountriesByRegion,
-    getCountriesByCountinent,
     updateCountry,
     deleteCountry,
 }
