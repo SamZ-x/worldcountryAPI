@@ -15,7 +15,7 @@ require('dotenv').config()
 //import middleware modules
 const notfound = require('./middlewares/url-not-found')
 const errorhandler = require('./middlewares/error-handle')
-
+const corsSet = require('./middlewares/cors')
 
 
 //************  Middlewares USE ************//
@@ -24,6 +24,7 @@ app.use(express.json())
 
 
 //************  MODULES USE ************//
+app.use(corsSet)
 app.use('/api/v1/worldcountry', countryRoutes)
 app.use(notfound)
 app.use(errorhandler)

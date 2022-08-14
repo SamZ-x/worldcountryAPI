@@ -56,7 +56,7 @@ const getCountries = asyncWrapper( async (req, res)=>{
     //set page limit and paging(use skip and limit to implement)
     //skip: skip the records before target
     //limit: not Display the records after the target
-    const limit = Number(req.query.limit) || 20 //specific limit or default 10 record per page
+    const limit = Number(req.query.limit) || (result.length) //specific limit or default 10 record per page
     const page = Number(req.query.page) || 1    //specific page or default 1st page
     const skipNum = (page-1)*limit
     result = result.skip(skipNum).limit(limit)
