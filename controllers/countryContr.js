@@ -1,16 +1,20 @@
-//call back functions for routes
+//history
+// Aug 17, 2022  - remove asyncWrapper middleware
+
+
 
 //import modules
 const Country = require('../models/country')
-const asyncWrapper = require('../middlewares/async')
+//const asyncWrapper = require('../middlewares/async')
 const {newCustomAPIError} = require('../error/customAPIError')  //import the instantiation function
-
+const {BadRequestError} = require('../error')
+const {StatusCodes} = require('http-status-codes')
 
 //dynamic get countries
 //base on filter values
 //sort the result
 //paging and display
-const getCountries = asyncWrapper( async (req, res)=>{
+const getCountries = async (req, res)=>{
     //get parameters
     const filter = {}                //store the clean filter data
     const {name, alphaCode, m49Code, region, countinent, sort, fields} = req.query
@@ -56,42 +60,43 @@ const getCountries = asyncWrapper( async (req, res)=>{
     //set page limit and paging(use skip and limit to implement)
     //skip: skip the records before target
     //limit: not Display the records after the target
-    const limit = Number(req.query.limit) || (result.length) //specific limit or default 10 record per page
+    const limit = Number(req.query.limit) || (result.length) //specific limit or all
     const page = Number(req.query.page) || 1    //specific page or default 1st page
     const skipNum = (page-1)*limit
     result = result.skip(skipNum).limit(limit)
 
     //get back the result
     const countries = await result
-    res.status(202).json({success:true, message: `Retrieved countries ${countries.length} record(s)`, data:countries})
-})
+    res.status(StatusCodes.OK).json({success:true, message: `Retrieved countries ${countries.length} record(s)`, data:countries})
+}
 
 
 //create a country
 //need req body (contain info data)
-const createCountry = asyncWrapper( async (req, res)=>{
+const createCountry = async (req, res)=>{
     const countryData = req.body
+    //error handler?
     await Country.create(countryData)
-    res.status(202).json({success:true, message: 'create country', data:countryData })
-})
+    res.status(StatusCodes.OK).json({success:true, message: 'create country', data:countryData })
+}
 
 //get single country by id
 //need req params
-const getCountryById = asyncWrapper( async (req, res, next)=>{
+const getCountryById = async (req, res, next)=>{
     const {id:targetId} = req.params
     const country = await Country.findOne({_id:targetId})    //or findById(targetId)
     //result check
     if(!country){
         //send header and break
-       return next(newCustomAPIError(404,`No found country id: ${targetId}`))
+       return next(new BadRequestError(`No found country id: ${targetId}`))
     }
-    res.status(202).json({success:true, message: `get single country id: ${targetId}`, data:country})
-})
+    res.status(StatusCodes.OK).json({success:true, message: `get single country id: ${targetId}`, data:country})
+}
 
 
 //update country info
 //need req body
-const updateCountry =asyncWrapper( async (req, res, next)=>{
+const updateCountry =async (req, res, next)=>{
     const {id:targetId} = req.params
     const countryData = req.body
     const newCountry = await Country.findByIdAndUpdate({_id:targetId}, countryData, {
@@ -100,21 +105,21 @@ const updateCountry =asyncWrapper( async (req, res, next)=>{
     })
     //if not found existing country, return 404
     if(!newCountry){
-        return next(newCustomAPIError(404,`Not found a country with id: ${targetId}`))
+        return next(new BadRequestError(`Not found a country with id: ${targetId}`))
     }
-    res.status(202).json({success:true, message: "updated country", data:newCountry})
-})
+    res.status(StatusCodes.OK).json({success:true, message: "updated country", data:newCountry})
+}
 
 //delete country record
 //need req params
-const deleteCountry =asyncWrapper( async (req, res, next)=>{
+const deleteCountry =async (req, res, next)=>{
     const {id:targetId} = req.params
     const deletedCountry = await Country.findOneAndDelete({_id:targetId})  
     if(!deletedCountry){
-        return next(newCustomAPIError(404,`Not found a country with id: ${targetId}`))
+        return next(new BadRequestError(`Not found a country with id: ${targetId}`))
     }
-    res.status(202).json({success:true, message: `deleted country id : ${targetId}`})
-})
+    res.status(StatusCodes.OK).json({success:true, message: `deleted country id : ${targetId}`})
+}
 
 //export modules
 //serve for routes

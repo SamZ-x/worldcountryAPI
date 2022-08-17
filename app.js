@@ -1,5 +1,8 @@
 
 //************  MODULES & INSTANCES ************//
+//import dependencies
+require('dotenv').config()
+require('express-async-errors')
 
 //import express modules and create server
 const express = require('express')
@@ -10,7 +13,6 @@ const countryRoutes = require('./routes/countryRoutes')
 
 //import database relatived modules
 const dbConnect = require('./db/connection')
-require('dotenv').config()
 
 //import middleware modules
 const notfound = require('./middlewares/url-not-found')
