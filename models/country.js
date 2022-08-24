@@ -16,12 +16,14 @@ const countrySchema = new mongoose.Schema({
         type:String,
         default:"N/A",
         trim:true,
+        //unique:true,       //NOT WORK?
     },
 
     //store M49-code of a country. ex: 24 (Afghanistan)
     m49Code:{
         type:Number,
         default:0,
+        //unique:true,
     },
 
     //store the region of a country. ex: Middle Africa (Afghanistan)

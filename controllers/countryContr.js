@@ -2,13 +2,13 @@
 // Aug 17, 2022  - remove asyncWrapper middleware
 
 
-
 //import modules
 const Country = require('../models/country')
 //const asyncWrapper = require('../middlewares/async')
 const {newCustomAPIError} = require('../error/customAPIError')  //import the instantiation function
 const {BadRequestError} = require('../error')
 const {StatusCodes} = require('http-status-codes')
+const jwt = require('jsonwebtoken')
 
 //dynamic get countries
 //base on filter values
@@ -71,11 +71,17 @@ const getCountries = async (req, res)=>{
 }
 
 
+//request token
+const GetAccessToken = async (req, res) =>{
+    const {key} = req.body;
+    const token = jwt.sign({key:key}, process.env.JWT_SECRET, {expiresIn:process.env.JWT_LIFETIME})
+    res.status(StatusCodes.CREATED).json({message:'Token created',token:token})
+}
+
 //create a country
 //need req body (contain info data)
 const createCountry = async (req, res)=>{
     const countryData = req.body
-    //error handler?
     await Country.create(countryData)
     res.status(StatusCodes.OK).json({success:true, message: 'create country', data:countryData })
 }
@@ -125,8 +131,9 @@ const deleteCountry =async (req, res, next)=>{
 //serve for routes
 module.exports = {
     getCountries,
-    createCountry,
     getCountryById,
+    GetAccessToken,
+    createCountry,
     updateCountry,
     deleteCountry,
 }
